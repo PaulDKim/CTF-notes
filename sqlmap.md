@@ -5,6 +5,9 @@ SQLMap generally requires `parameters` to garget specific parts of a web applica
 For instance, below is a basic example of how to use SQLMap with a url -u and a parameter. The id=5 is the parameter being tested for SQLi:  
   `python sqlmap.py -u 'http://testsite.com/index.php?id=5`
 
+## Helpful Resources
+* https://hackertarget.com/sqlmap-tutorial/
+
 ## Output Description
 After starting the SQLMap process, data will be shown as the test progresses. This data is crucial to understand, because it guides us through the automated SQLi process.  
 It also shows us exactly what kind of vulnerabilities SQLMap is exploiting.  
@@ -81,7 +84,20 @@ You can find the documentation for SQLMap by `SQLMap Github -> Wiki -> Usage` or
 * `--no-cast`: Prevents SQLMap from attempting data-type casting.
 * `--tamper`: Get around filtering mechanisms or WAF
   > --tamper=space2comment -> replaces spaces with comments to bypass spacing filtering
-* `--threads`: set the number of concurrent threads (requests) that SQLMap should use during testing. This can speed up the process of detecting SQL injection vulnerabilities by running multiple tests at the same time
+* `--threads`: set the number of concurrent threads (requests) that SQLMap should use during testing. This can speed up the process of detecting SQL injection vulnerabilities by running multiple tests at the same time. Max is 10. 
+
+## Tamper
+The `--tamper` option in SQLMap is used to modify SQL injection payloads to bypass web application filters or WAFs (Web Application Firewalls). It applies tamper scripts that alter the payloads, making them less detectable.  
+Common --tamper Scripts:
+`space2comment` – Replaces spaces with SQL comments (/**/).
+`space2dash` – Replaces spaces with a dash comment (--).
+`charunicodeescape` – Encodes payloads using Unicode escape sequences.
+`between` – Replaces = with BETWEEN.
+`randomcase` – Randomizes the uppercase/lowercase letters in SQL keywords.
+`apostrophemask` – Masks single quotes (') with SQL comments.
+`equaltolike` – Replaces = with LIKE.
+`percentencode` – URL-encodes characters.
+`unmagicquotes` – Bypasses magic quotes in PHP environments.
 
 ## Gathering Data
 You can gather a lot of data through SQLMap and even specify what kind of data you're looking for:  
