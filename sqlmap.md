@@ -81,6 +81,7 @@ You can find the documentation for SQLMap by `SQLMap Github -> Wiki -> Usage` or
 * `--no-cast`: Prevents SQLMap from attempting data-type casting.
 * `--tamper`: Get around filtering mechanisms or WAF
   > --tamper=space2comment -> replaces spaces with comments to bypass spacing filtering
+* `--threads`: set the number of concurrent threads (requests) that SQLMap should use during testing. This can speed up the process of detecting SQL injection vulnerabilities by running multiple tests at the same time
 
 ## Gathering Data
 You can gather a lot of data through SQLMap and even specify what kind of data you're looking for:  
@@ -104,3 +105,19 @@ This will extract raw data from the specified database.table.column:
 * `-C` specifies the column(s)
 > sqlmap -u "http://www.example.com/?id=1" --dump -T users -D testdb -C name,surname
 
+This will perform `DB schema enumeration`:  
+* `--schema` retrieves the database schema, including information about the tables and columns within the database
+> sqlmap -u "http://www.example.com/?id=1" --schema
+
+You can `search` for data: 
+* `--search` used to search for a specific keyword (like a table name or column) in the database
+> sqlmap -u "http://www.example.com/?id=1" --search -T users
+
+You can filter data based on `conditional statements`:  
+* `--where`: used to filter data based on a conditional statement (like SQL's WHERE clause)
+* The example below filters the data for names that start with an 'f':
+> sqlmap -u "http://www.example.com/?id=1" --dump -T users -D testdb --where="name LIKE 'f%'"
+
+This will extract `binary data`:  
+* `--binary-fields="[Enter field/column]"` tells SQLMap to treat the specified field as binary data, allowing it to extract and handle that field accordingly
+> sqlmap -u "http://www.example.com/?id=1" --dump -T users -D testdb --binary-fields="digest"
