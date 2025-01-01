@@ -46,4 +46,61 @@ It also shows us exactly what kind of vulnerabilities SQLMap is exploiting.
   * Following this statement is a list of all injection points with type, title and payloads, which is the final proof of successful detection and exploitation of SQLi vulnerabilities.
   * It should be noted that SQLMap only lists the findings where they are proven to be exploitable (usable).
 
-## HTTP Requests
+## Setup
+It's extremely easy to make mistakes when setting up your SQLMap load, such as forgetting to provide proper cookie values, over-complicating setup with a lengthy command line, or even improper declaration of formatted POST data.  You can prevent this by utilizing `cURL` commands or `full HTTP requests`:  
+* `cURL`
+  * One of the best and easiest ways to properly set up an SQLMap Request
+  * You can use this by utilizing the `copy as cURL` feature within the Network panel inside of a browser's developer tools
+  * Copy and paste the cURL commmand and replace `curl` with `sqlmap`
+* `Full HTTP Requests`
+  * If you need to specify a complex HTTP request with a lot of unique header values and a long POST body, you can utilize the `-r` option.
+  * > sqlmap -r requirements.txt
+  * This allows you to provide SQLMap with a request file, containing the whole HTTP request inside of a single text file.
+  * You can get this through a proxy (`such as burp suite`). Make sure to intercept the request -> right-click + copy to file
+
+## GET/POST Requests
+* `GET`
+  * Typically in a GET request, the parameters needed for testing are within the URL itself:
+    > sqlmap -u http://test.com/index.php?id=5
+* `POST`
+  * For POST requests, you can utilize the `--data` option within SQLMap:
+    > sqlmap -u http://test.com/index.php --data 'id=1&name=admin'
+
+## Helpful Options and Flags
+You can find the documentation for SQLMap by `SQLMap Github -> Wiki -> Usage` or by utilizing `sqlmap --hh` in the command line  
+* `--batch`: Run SQLMap without asking for user input
+* `--cookie`: Specify a cookie header
+* `-t /path/to/file`: Store traffic into an output file
+* `-v [pick a number 1-6]`: Specify verbosity level, default is 1
+* `--prefix="enter prefix"`: Specify a prefix in front of each vector/payload
+* `--suffix="enter suffix"`: Specify a suffix in front of each vector/payload
+* `--level=[1-5]`: Specify the level of payload
+  > Remember that `level` is how complex each payload is
+* `--risk=[1-3]`: Specify the risk of payload
+  > Remember that `risk` is how "dangerous" each payload is
+* `--no-cast`: Prevents SQLMap from attempting data-type casting.
+* `--tamper`: Get around filtering mechanisms or WAF
+  > --tamper=space2comment -> replaces spaces with comments to bypass spacing filtering
+
+## Gathering Data
+You can gather a lot of data through SQLMap and even specify what kind of data you're looking for:  
+
+  
+This will perform basic `DB enumeration`:    
+* `--banner` extracts DB type and version
+* `--current-user` extracts current user of the DB
+* `--is-dba` checks to see if current user is an administrator
+> sqlmap -u "http://www.example.com/?id=1" --banner --current-user --current-db --is-dba
+
+This will perform `table enumeration`:  
+* `--tables` retrieves table names
+* `-D [enter database name here]` specifies the database
+> sqlmap -u "http://www.example.com/?id=1" --tables -D testdb
+
+This will extract raw data from the specified database.table.column:
+* `--dump` retrieves and display the contents once an injection vulnerability is confirmed
+* `-T` specifies the table
+* `-D` specifies the database
+* `-C` specifies the column(s)
+> sqlmap -u "http://www.example.com/?id=1" --dump -T users -D testdb -C name,surname
+
