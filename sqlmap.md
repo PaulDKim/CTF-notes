@@ -99,6 +99,40 @@ Common --tamper Scripts:
 `percentencode` – URL-encodes characters.
 `unmagicquotes` – Bypasses magic quotes in PHP environments.
 
+## Bypassing Web Application Protections
+* `CSRF (Cross-Site Request Forgery)` is an attack where a malicious actor tricks a user into submitting a request that performs an action on a website without the user's consent.
+  * Anti-CSRF: Web apps often use anti-CSRF tokens in HTTP requests (usually in POST data or headers) to prevent automated attacks. To bypass CSRF checks, use the `--csrf-token` option.
+    > sqlmap -u "http://www.example.com/" --data="id=1&csrf-token=WfF1szMUHhiokx9AHFply5L2xAOfjRkE" --csrf-token="csrf-token"
+
+* `Unique Value Bypass` involves web applications requiring unique values (like session IDs or random strings) in parameters for each request. To get around this, use the `--randomize` option.
+  * To identify if a web application uses `Unique Value Bypass`, look for parameters in the URL query string, POST data, or headers that require dynamically changing values with every request. Common signs include:
+    * Repeated Failed Requests
+    * Parameter Patterns: look for parameters that change on every valid request
+    > sqlmap -u "http://www.example.com/?id=1&rp=29125" --randomize=rp --batch -v 5 | grep URI
+
+  * `Calculated Parameters` is where a web application expects a proper parameter to be calculated based on some other parameter value. For example:
+    * `id` can be one parameter
+    * `h` can be another parameter
+    * the `calculation` means the second parameter (h) is generated using the first parameter (id) with a formula (like MD5(id))
+    * To bypass this, the option `--eval` should be used, where a valid Python code is being evaluated just before the request is being sent to the target
+      > sqlmap -u "http://www.example.com/?id=1&h=c4ca4238a0b923820dcc509a6f75849b" --eval="import hashlib; h=hashlib.md5(id).hexdigest()" --batch -v 5 | grep URI
+
+    * You can confirm the need of `--eval` if:
+      * Change one parameter (id) and see if the (h) must change too
+      * Look for patterns: Does h change predictably when id changes?
+      * If you're not sure, you can test by trying hashes (like MD5 or SHA1) of the id value
+        > Remember that for `MD5 hashes` they are:
+          * 32 characters long
+          * contains only hexadecimal characters 0-9 and a-f
+* `--proxy` is used to set a proxy: `--proxy="socks4://177.39.187.70:33283"`
+  * You can also use `--proxy-file` to provide a list of proxies, and SQLMap will cycle through them and skip `blacklisted` IPs automatically
+  * You can also use `--tor` to make SQLMap automatically detect and use the local Tor Proxy. Make sure to use `--check-tor` to ensure Tor is working properly
+* By default, SQLMap sends payloads to check for the existence of `WAFs (Web Application Firewalls)`. If we wanted to skip the test altogether to produce less noise, we can use switch `--skip-waf`
+* Sometimes web applications can/will blacklist certain `user-agents`. In order to bypass this, you can use `--random-agent` which replaces the default user-agent value with a `random, browser-like User-Agent string` from a large pool.
+  * It's important to note that even with a bypass, further protection methods might still cause issues, because security systems are constantly evolving, reducing exploitable weaknesses
+* Out of other protection bypass mechanisms, there are also two more that should be mentioned. The first one is the `Chunked transfer encoding`, turned on using the switch `--chunked`, which splits the POST request's body into so-called "chunks." `Blacklisted SQL keywords` are split between chunks in a way that the request containing them can pass unnoticed.
+* The other bypass mechanisms is the `HTTP parameter pollution (HPP)`, where payloads are split in a similar way as in case of --chunked between `different same parameter named values` (e.g. ?id=1&id=UNION&id=SELECT&id=username,password&id=FROM&id=users...), which are concatenated by the target platform if supporting it (e.g. ASP).
+
 ## Gathering Data
 You can gather a lot of data through SQLMap and even specify what kind of data you're looking for:  
 
