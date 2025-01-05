@@ -210,6 +210,7 @@ This will extract `binary data`:
 
 ### 4. **OS Command Execution**
 - **OS Shell via SQLMap**: Use `--os-shell` to gain command execution on the server.
+- Sometimes you cannot use `cd` however, you can use `ls -l [path or name]` and `cat [path]`
   - Example:
     ```bash
     sqlmap -u "http://www.example.com/?id=1" --os-shell
