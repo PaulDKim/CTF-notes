@@ -196,4 +196,4 @@ You can also use the same logic for alternatives for `base64` encoding/decoding 
 
 Another thing to consider is converting a string from `utf-8` to `utf-16` before we `base64` it:  
 `echo -n whoami | iconv -f utf-8 -t utf-16le | base64`
-> TIP: `iconv` is a tool for converting text between different character encodings. 
+> TIP: `iconv` is a tool for converting text between different character encodings. `-f` specifies the source encoding (what format the input text is currently in). `-t` specifies the target encoding. 
