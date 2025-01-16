@@ -178,4 +178,13 @@ Another command obfuscation technique that can be employed is `reversing command
 The same can be done in Windows:  
 ![descript](images/ps-rev.png)
 
+#### Encoded Commands
+We can create our own unique obfuscation command so our injections is much less likely to be denied by a filter or a WAF. For instance we can take a command we want to obfuscate like: `cat /etc/passwd | grep 33` and encode it in `base64` like: `echo -n 'cat /etc/passwd | grep 33' | base64`. Which would output: `Y2F0IC9ldGMvcGFzc3dkIHwgZ3JlcCAzMw==`. 
+> TIP: The `-n` option in `echo` prevents a newline from being added at the end of the output.
+
+Now we can create a command that will decode this base64 encoded string in a subshell `$()`, and then pass it to `bash` to be executed: `bash<<<$(base64 -d<<<Y2F0IC9ldGMvcGFzc3dkIHwgZ3JlcCAzMw==)`
+> TIP: Without `bash<<<` the decoded command `cat /etc/passwd | grep 33` would just be printed, and not executed. `bash<<<` forces the decoded string to be treated as executable code by Bash!
+
+
+
 
