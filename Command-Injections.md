@@ -185,5 +185,15 @@ We can create our own unique obfuscation command so our injections is much less 
 Now we can create a command that will decode this base64 encoded string in a subshell `$()`, and then pass it to `bash` to be executed: `bash<<<$(base64 -d<<<Y2F0IC9ldGMvcGFzc3dkIHwgZ3JlcCAzMw==)`
 > TIP: Without `bash<<<` the decoded command `cat /etc/passwd | grep 33` would just be printed, and not executed. `bash<<<` forces the decoded string to be treated as executable code by Bash!
 
-The trick with encoding your payloads is that you need to be flexible with the target web application's security mechanisms. For instance, it's possible that `bash` can be blacklisted so to bypass this, you can use: `sh<<<`, which is a simpler shell alternative to bash that may not be blocked. 
+The trick with encoding your payloads is that you need to be flexible with the target web application's security mechanisms. For instance, it's possible that `bash` can be blacklisted so to bypass this, you can use: `sh<<<`, which is a simpler shell alternative to bash that may not be blocked.  
 
+You can also use the same logic for alternatives for `base64` encoding/decoding and `hex` encoding/decoding. For instance: 
+* Instead of `base64 -d`, you can use:
+  * `echo 'Y2F0IC9ldGMvcGFzc3dkIHwgZ3JlcCAzMw==' | openssl base64 -d`
+* If your payload is hex-encoded, you can decode it with:
+  * `echo '636174202f6574632f706173737764207c2067726570203333' | xxd -r -p`
+> TIP: `openssl` is a tool for securing data, including encrypting, decrypting, and encoding information
+
+Another thing to consider is converting a string from `utf-8` to `utf-16` before we `base64` it:  
+`echo -n whoami | iconv -f utf-8 -t utf-16le | base64`
+> TIP: `iconv` is a tool for converting text between different character encodings. 
