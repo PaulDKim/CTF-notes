@@ -131,3 +131,7 @@ echo $(tr '!-}' '"-~' <<< [)
 - The `$()` runs the `tr` command and uses its output.
 - The `tr` command shifts characters, and `<<< [` gives the starting character (`[`).
 - This trick is a clever way to get the `\` character without directly typing it.
+
+> NOTE: this would not work if `[` (`ascii value 92`) was not within the range of the sets of characters to translate!
+
+
