@@ -150,3 +150,32 @@ In Linux, you can utilize the backslash `\` and the positional parameter `$@` th
 
 #### Windows Only 
 There are some characters that we can use in Windows-only to insert in the middle of commands that do not affect the outcome. One of the more notable ones is the caret `^` character: `who^ami`
+
+### Advanced Command Obfuscation
+In some instances, the web application may employ advanced filtering solutions, like Web Application Firewalls (WAFs), and basic evasion techniques may not necessarily work. However, on the flip side, we can utilize more advanced techniques for such occasions. 
+
+#### Case Manipulation 
+One command obfuscation technique we can use is `case manipulation`, like inverting the character cases of a command like `WHOAMI` or `WhOaMi`. This can work because a command blacklist may not check for `different case variations` of a single word, as Linux systems are `case-sensitive`. 
+> TIP: If you're dealing with a Windows server, you can change the casing of the characters and send it. In Windows, commands for Powershell and CMD are `case-insensitive`, meaning they will execute the command regardless of what case it is written in: `WHOamI`
+
+When it comes to Linux and a bash shell, which are `case-sensitive`, you must employ creative techniques and find a command that turns the target command into an all-lowercase word. 
+* `$(tr "[A-Z]" "[a-z]"<<<"WhOaMi")`
+* `$(a="WhOaMi";printf %s "${a,,}")`
+  * This sets a variable `a` to the string `"WhOaMi"`
+  * `printf` in Bash  formats and outputs data
+  * `%s` is a `format specifier` in printf. It tells printf to treat the corresponding input as a string
+  * `${...}` is `parameter expansion`. It allows for more advanced operations on variables, like modifying, transforming or extracting parts of their values
+  * `,,` is `case modification operator` within the `parameter expansion`.
+    * `,,` converts all uppercase letters in the variable's value to lower case
+    * `${a,,}` takes the string stored in `a` and coverts it to `"whoami"`
+  
+#### Reversed Commands
+Another command obfuscation technique that can be employed is `reversing commands` and having a `command template` that switches them back and executes them in real-time. For example, we can write `imaohw` instead of `whoami` to avoid triggering the blacklisted command. 
+* `echo 'whoami' | rev`
+* `$(rev<<<'imaohw')`
+> NOTE: `<<<` is a `here string` in bash. It sends a single string to the standard input of a command. `|` takes the `output of one command` and sends it to the `stdin` of another
+
+The same can be done in Windows:  
+![descript](images/ps-rev.png)
+
+
