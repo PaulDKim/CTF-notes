@@ -1,2 +1,0 @@
-# CTF-notes
-Hacking notes
