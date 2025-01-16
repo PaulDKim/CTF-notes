@@ -134,4 +134,19 @@ echo $(tr '!-}' '"-~' <<< [)
 
 > NOTE: this would not work if `[` (`ascii value 92`) was not within the range of the sets of characters to translate!
 
+### Bypass Blacklisted Commands
 
+With the same logic of web applications being able to blacklist certain operators like `;` and `spaces`, they can also blacklist `commands` such as `whoami`. For instance, `ip=127.0.0.1%0a` would not trigger an error but `ip=127.0.0.1%0awhoami` could. 
+
+#### Linux and Windows 
+One very common and easy obfuscation technique is inserting certain characters within the command (`whoami`) that are usually ignored by command shells like `Bash` or `Powershell` and will execute the same command as if they were not there. Some of the characters are a single quote `'` and a double quote `"`. 
+
+For example, if we want to obfuscate the `whoami` command, you can insert single or double quotes between its characters as follows: `w'h'o'am'i` or `w"h"o"am"i`
+> TIP: You cannot mix the `type of quotes` and `the number of quotes must be even`
+
+#### Linux Only 
+In Linux, you can utilize the backslash `\` and the positional parameter `$@` the same way as we did to obsfucate the command names with quotes: `who$@ami` or `w\ho\am\i`
+> TIP: The number of characters `do not have to be even`, and we can insert just one of them if we want to
+
+#### Windows Only 
+There are some characters that we can use in Windows-only to insert in the middle of commands that do not affect the outcome. One of the more notable ones is the caret `^` character: `who^ami`
