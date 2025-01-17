@@ -197,3 +197,20 @@ You can also use the same logic for alternatives for `base64` encoding/decoding 
 Another thing to consider is converting a string from `utf-8` to `utf-16` before we `base64` it:  
 `echo -n whoami | iconv -f utf-8 -t utf-16le | base64`
 > TIP: `iconv` is a tool for converting text between different character encodings. `-f` specifies the source encoding (what format the input text is currently in). `-t` specifies the target encoding. 
+
+## Evasion Tools
+Like with most injection attacks (`i.e. sql injection`), there's automation tools that can help us to help us with advanced obfuscation techniques, especially when basic, manual obfuscation techniques cannot work. 
+
+### Linux (Bashfuscator)
+For Linux-based systems, users have the option to use `Bashfucator`. To use this automated tool, you can clone the repository from Github and then its requirements:  
+![descript](images/bashfuscator.png)  
+Once you have the tool properly set up, can start using it from the `./bashfuscator/bin/` directory:  
+![descript](images/bashfuscator-run.png)  
+We can start by simply providing the command we want to obsfucate with the `-c` flag:  
+![descript](images/bashfuscator-obfuscate.png)  
+It's important to note that running the automated tool like this will make the tool pick a `random` obfuscation technique, which can output command lengths ranging from a few hundred to over a million characters. Because of this reason, it's best to to use some flags like `-s` and `-t` to produce shorter and simpler obfuscated commands:  
+![descript](images/bashfuscator-shortened.png)
+> `s` chooses a specific shell obfuscation technique
+> `t` selects the encoding or transformation type
+> `--no-mangling` disables mangling of the command (avoids unnecessary modifications or character insertions that could make the command too complex
+> `--layers` limits the obfuscation to one layer, keeping the output short and simple
