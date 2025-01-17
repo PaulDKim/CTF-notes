@@ -215,6 +215,21 @@ It's important to note that running the automated tool like this will make the t
 > `--no-mangling` disables mangling of the command (avoids unnecessary modifications or character insertions that could make the command too complex
 > `--layers` limits the obfuscation to one layer, keeping the output short and simple
 
+```
+Generally, to download programs from Gihub:
+
+1. Clone the repository --> git clone <repository-URL>
+2. Navigate to the project repository cd --> cd <repository-folder>
+3. Check documentation: look for files like README.md or INSTAL.md for specific setup instructions
+4. Install dependencies:
+sudo apt install <dependency-name> For system packages
+pip install -r requirements.txt For python projects
+npm install For node.js projects
+5. Run the program:
+./<program-name>
+python <script.py>
+```
+
 ## SUMMARY
 
 | **Technique**                     | **Description**                                                                                                        | **Use Case**                                           | **Example**                                                                                   |
