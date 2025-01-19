@@ -56,6 +56,40 @@ Query the database type and version.
 
 ---
 
+## Oracle Metadata Views
+
+Oracle databases use a set of system views to manage and query metadata. Here are the key views for accessing information about tables and columns, along with their important columns:
+
+- **`ALL_TABLES`**: Lists all tables accessible to the user.
+  - **Key Columns**:
+    - `TABLE_NAME`: Name of the table.
+    - `OWNER`: Owner of the table (schema).
+    - `TABLESPACE_NAME`: Tablespace where the table is stored.
+    - `NUM_ROWS`: Approximate number of rows in the table (if statistics are gathered).
+    - `LAST_ANALYZED`: Date when the table was last analyzed.
+
+- **`ALL_TAB_COLUMNS`**: Contains information about the columns of all tables accessible to the user.
+  - **Key Columns**:
+    - `TABLE_NAME`: Name of the table.
+    - `COLUMN_NAME`: Name of the column.
+    - `DATA_TYPE`: Data type of the column.
+    - `DATA_LENGTH`: Length of the column data type.
+    - `NULLABLE`: Indicates if the column allows NULL values.
+
+- **`DBA_TABLES`**: Provides details of all tables in the database (requires DBA privileges).
+  - **Key Columns**:
+    - Same as `ALL_TABLES`.
+
+- **`USER_TABLES`**: Lists tables owned by the current user.
+  - **Key Columns**:
+    - Same as `ALL_TABLES`.
+
+- **`USER_TAB_COLUMNS`**: Contains information about columns in tables owned by the current user.
+  - **Key Columns**:
+    - Same as `ALL_TAB_COLUMNS`.
+
+---
+
 ## Database Contents
 
 List tables and their columns.
