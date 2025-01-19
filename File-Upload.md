@@ -98,3 +98,64 @@
        - `-p`: Specify the payload (e.g., `php/reverse_php`).
        - `-f`: Format (e.g., `raw`, `exe`, `elf`).
 
+## Client-Side Validation
+
+### 1. **Overview**
+Many web applications rely on front-end JavaScript for file format validation. This validation prevents files that do not meet specified criteria (e.g., non-image formats) from being uploaded. However, since these validations occur on the client-side, they can be bypassed by:
+
+- Modifying the upload request directly to interact with the server, skipping validation.
+- Editing the front-end code via browser developer tools to disable or modify validations.
+
+### 2. **Back-End Request Modification**
+#### Steps to Bypass Validation:
+1. **Examine the Request**: Capture an image upload request using Burp Suite.
+2. **Modify the Request**:
+   - Change `filename="HTB.png"` to `filename="shell.php"`.
+   - Replace the file content with a PHP web shell.
+3. **Send the Modified Request**:
+   - Ensure that the server does not perform back-end validation.
+   - If successful, the file will upload, and you can access the web shell.
+
+#### Key Points:
+- The `Content-Type` header may not require modification.
+- A successful upload typically results in a confirmation message like "File successfully uploaded."
+
+### 3. **Disabling Front-End Validation**
+#### Using Browser Developer Tools:
+1. **Inspect the File Input**:
+   - Use [CTRL+SHIFT+C] to toggle the Page Inspector.
+   - Locate the `<input>` tag for file uploads, e.g.:
+     ```html
+     <input type="file" name="uploadFile" id="uploadFile" onchange="checkFile(this)" accept=".jpg,.jpeg,.png">
+     ```
+2. **Analyze the Validation Function**:
+   - Identify the `onchange="checkFile(this)"` attribute.
+   - Use the browser console ([CTRL+SHIFT+K]) to inspect the `checkFile` function:
+     ```javascript
+     function checkFile(File) {
+         if (extension !== 'jpg' && extension !== 'jpeg' && extension !== 'png') {
+             $('#error_message').text("Only images are allowed!");
+             File.form.reset();
+             $("#submit").attr("disabled", true);
+         }
+     }
+     ```
+   - Note how the function restricts file extensions.
+
+3. **Bypass the Validation**:
+   - Remove the `onchange="checkFile(this)"` attribute:
+     - Double-click the function name in the inspector and delete it.
+   - Optionally, remove `accept=".jpg,.jpeg,.png"` to allow easier file selection.
+
+4. **Upload the Web Shell**:
+   - Select the PHP web shell using the file input dialog.
+   - Submit the form; the client-side validation is bypassed.
+
+#### Important Notes:
+- These modifications are temporary and will not persist through a page refresh.
+- The primary goal is to bypass the validation to upload a malicious file.
+
+### 4. **Locating and Accessing the Uploaded File**
+Once the web shell is uploaded, inspect the profile image URL to locate the file:
+```html
+<img src="/profile_images/shell.php" class="profile-image" id="profile-image">
