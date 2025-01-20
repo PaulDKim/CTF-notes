@@ -198,11 +198,36 @@ Once the web shell is uploaded, inspect the profile image URL to locate the file
 > are able to run this command. `Also`, you should consider switching off URL encoding before the Intruder attack so all the extensions get sent "as is"!
 
 
+## Whitelist Filters
 
+**Whitelist vs Blacklist:**
+   - **Whitelist**: More secure; only allows specified file extensions.
+   - **Blacklist**: Allows wide variety but blocks known harmful extensions; useful in more flexible upload systems.
+   - Both can be used together depending on use case.
 
+**Whitelisting Extensions:**
+   - Example code uses regex to validate allowed extensions (e.g., `.jpg`, `.jpeg`).
+   - Common mistake: regex may check if the extension *contains* certain extensions rather than ensuring it *ends* with them.
+   - **Attack method**: Double extensions (e.g., `shell.jpg.php`) can bypass simple regex checks.
 
+**Double Extensions Attack:**
+   - If the system only checks for the presence of an extension, attackers can append valid extensions (e.g., `.jpg.php`) to pass the whitelist test while uploading malicious files.
+   - **Example**: `shell.jpg.php` may be uploaded, and PHP code will execute.
 
+**Reverse Double Extension Attack:**
+   - Misconfigurations in server (e.g., Apache2) might allow files like `shell.php.jpg` to execute PHP code, despite the whitelist.
+   - **Example**: Apache regex configuration could be too lenient (`<FilesMatch ".+\.ph(ar|p|tml)">`), allowing files that contain `.php` but end with `.jpg` to still execute PHP.
 
+**Character Injection:**
+   - **Injection methods**: Inject special characters to bypass validation:
+     - `%20`, `%00`, `%0a`, `%0d0a`, `/`, `.\`, `.`, `…`, `:`
+   - **Effect**: Tricking server to misinterpret the filename, allowing PHP code execution.
+   - Example: `shell.php%00.jpg` works on older PHP versions.
+   - **Fuzzing tool**: Generate permutations of filenames with injected characters to find valid uploads.
+
+**Custom Wordlist Generation for Fuzzing:**
+   - Use a bash script to create filename permutations with injected characters to test against upload forms.
+   - **Goal**: Identify filenames that bypass whitelisting and execute PHP code after upload.
 
 
 
