@@ -159,3 +159,50 @@ Many web applications rely on front-end JavaScript for file format validation. T
 Once the web shell is uploaded, inspect the profile image URL to locate the file:
 ```html
 <img src="/profile_images/shell.php" class="profile-image" id="profile-image">
+```
+
+## **Blacklisting Extensions**
+   - Back-end validation using a blacklist is a weak approach for file type validation as it is often incomplete and can be bypassed.
+   - Example of a blacklist implementation in PHP:
+     ```php
+     $fileName = basename($_FILES["uploadFile"]["name"]);
+     $extension = pathinfo($fileName, PATHINFO_EXTENSION);
+     $blacklist = array('php', 'php7', 'phps');
+
+     if (in_array($extension, $blacklist)) {
+         echo "File type not allowed";
+         die();
+     }
+     ```
+   - Common issues with blacklist-based validation:
+     - Case sensitivity: A file named `pHp` might bypass the blacklist on Windows servers due to case insensitivity.
+     - Limited scope: Many extensions (e.g., `.phtml`) that can execute PHP are not included in the blacklist.
+
+## **Fuzzing Extensions**
+   - Fuzzing can identify allowed extensions by testing multiple file extensions to determine which are not blacklisted.
+   - Tools and resources:
+     - Use extension lists from **PayloadsAllTheThings** or **SecLists**.
+     - Burp Suite Intruder can automate extension fuzzing:
+       1. Send a file upload request to Intruder.
+       2. Set the file extension (e.g., `.php`) as the fuzzing position.
+       3. Load the PHP extensions list as payloads.
+       4. Analyze responses for successful uploads (e.g., "File successfully uploaded").
+
+## **Non-Blacklisted Extensions**
+   - Some extensions like `.phtml` may not be blacklisted and could allow PHP code execution.
+   - Steps to exploit:
+     1. Upload a file with a non-blacklisted extension (e.g., `shell.phtml`).
+     2. Include PHP code, such as a web shell, in the file content.
+     3. Access the uploaded file (e.g., `http://SERVER_IP/profile_images/shell.phtml`) and confirm its execution by testing a command.
+> `TIP:` When fuzzing the extensions in Burp Intruder, you can also change the the POST request data to include something like a hello word command in php and you can check which php extensions
+> are able to run this command. `Also`, you should consider switching off URL encoding before the Intruder attack so all the extensions get sent "as is"!
+
+
+
+
+
+
+
+
+
+
