@@ -241,17 +241,17 @@ Here is the revised list, including examples of how each character injection can
 
 ### Character Injection List for File Upload Bypass:
 
-| Character Injection | Description                                       | Example File Name | Use Case |
-|---------------------|---------------------------------------------------|--------------------|----------|
-| **%20 (space)**     | URL encoding for a space character                | `shell%20name.php` | Bypasses filters that don't account for spaces, allowing PHP files to pass as valid. |
-| **%0a (newline, LF)**| URL encoding for a newline character (Line Feed)  | `shell%0aname.php` | Injects a newline into the file name, which may bypass filters or cause unintended parsing behavior. |
-| **%00 (null byte)** | URL encoding for a null byte (end of string)      | `shell%00name.php` | Terminates the string early, causing filters to incorrectly stop checking after the null byte, potentially bypassing file type checks. |
-| **%0d0a (CRLF)**    | URL encoding for carriage return + newline (CRLF)| `shell%0d0aname.php` | CRLF can be used for header injection or bypassing filters that only check the file extension, potentially leading to security vulnerabilities. |
-| **/ (slash)**       | Directory separator (path traversal)              | `shell/..%5c%5c/etc/passwd` | Exploits path traversal vulnerabilities, allowing files to be uploaded to unintended locations, such as system files. |
-| **.\\ (relative path on Windows)**| Windows-specific relative path                | `shell.\uploads\file.php` | Windows uses `.\\` to reference directories, which could bypass directory restrictions by allowing files to be uploaded outside the allowed folder. |
-| **. (dot - current directory)**| Refers to the current directory                | `shell./uploads/file.php` | Uses `.` to reference the current directory, potentially bypassing checks that only allow uploads within a certain folder. |
-| **… (ellipsis)**    | Used as an ellipsis character, often overlooked by filters | `file…name.php`    | Bypasses filters that don't account for the ellipsis character, allowing files with unusual names to bypass validation. |
-| **: (colon)**       | Special character used in Windows paths           | `C:\uploads\file.php` | In Windows, `:` is part of file paths (e.g., `C:\`). Some filters may not properly handle this character, allowing bypasses. |
+| Character Injection | Description                                       | Example File Name (based on the script) | Use Case |
+|---------------------|---------------------------------------------------|----------------------------------------|----------|
+| **%20 (space)**     | URL encoding for a space character                | `shell%20.php.jpg`                     | Bypasses filters that don't account for spaces in file names, allowing PHP files to pass as valid extensions. |
+| **%0a (newline, LF)**| URL encoding for a newline character (Line Feed)  | `shell%0a.php.jpg`                     | Injects a newline into the file name, which may bypass filters or cause unintended parsing behavior. |
+| **%00 (null byte)** | URL encoding for a null byte (end of string)      | `shell%00.php.jpg`                     | Terminates the string early, causing filters to incorrectly stop checking after the null byte, potentially bypassing file type checks. |
+| **%0d0a (CRLF)**    | URL encoding for carriage return + newline (CRLF)| `shell%0d0a.php.jpg`                   | CRLF can be used for header injection or bypassing filters that only check the file extension, potentially leading to security vulnerabilities. |
+| **/ (slash)**       | Directory separator (path traversal)              | `shell/.php.jpg`                       | Can be used for path manipulation, allowing files to be uploaded outside the intended directory. |
+| **.\\ (relative path on Windows)**| Windows-specific relative path                | `shell.\php.jpg`                       | Windows uses `.\\` to reference directories, which could bypass directory restrictions by allowing files to be uploaded outside the allowed folder. |
+| **. (dot - current directory)**| Refers to the current directory                | `shell./php.jpg`                       | Uses `.` to reference the current directory, potentially bypassing checks that only allow uploads within a certain folder. |
+| **… (ellipsis)**    | Used as an ellipsis character, often overlooked by filters | `shell…php.jpg`                      | Bypasses filters that don't account for the ellipsis character, allowing files with unusual names to bypass validation. |
+| **: (colon)**       | Special character used in Windows paths           | `shell:php.jpg`                        | In Windows, `:` is part of file paths (e.g., `C:`). Some filters may not properly handle this character, allowing bypasses. |
 
 ### Explanation:
 - **%20**: A space encoded as `%20` can bypass file extension filters that don't handle URL encoding or spaces in file names.
