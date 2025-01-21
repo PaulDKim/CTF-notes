@@ -253,15 +253,96 @@ Here is the revised list, including examples of how each character injection can
 | **… (ellipsis)**    | Used as an ellipsis character, often overlooked by filters | `shell…php.jpg`                      | Bypasses filters that don't account for the ellipsis character, allowing files with unusual names to bypass validation. |
 | **: (colon)**       | Special character used in Windows paths           | `shell:php.jpg`                        | In Windows, `:` is part of file paths (e.g., `C:`). Some filters may not properly handle this character, allowing bypasses. |
 
-### Explanation:
-- **%20**: A space encoded as `%20` can bypass file extension filters that don't handle URL encoding or spaces in file names.
-- **%0a**: A newline encoded as `%0a` could cause misinterpretation of the file name and allow it to pass through a filter that only checks for certain extensions.
-- **%00**: The null byte (`%00`) is a classic method to terminate strings early, effectively bypassing file extension checks or even path restrictions.
-- **%0d0a**: CRLF injection is used in file upload attacks to insert control characters into the file name, potentially exploiting header injection or bypassing extension checks.
-- **/**: The directory separator can be used for path traversal, making it possible to upload files to sensitive locations outside the designated upload directory.
-- **.\\**: Windows-style relative paths can be used to bypass directory restrictions by referring to locations outside the intended upload folder.
-- **.**: Using the current directory (.) can trick filters into allowing uploads to unintended locations.
-- **…**: The ellipsis character can be used to bypass filters that are not designed to handle this character, helping an attacker obfuscate the file name.
-- **:**: In Windows paths, the colon is used in drive names (e.g., `C:`). If the filter doesn’t handle it properly, it may allow an attacker to upload files to other locations.
+Here's a breakdown of how each character injection can bypass a **whitelist filter** in a file upload scenario:
 
-This list includes specific examples showing how each character can be used in file upload bypass attacks, helping to explain how these characters circumvent whitelist validation.
+#### 1. **`%20 (space)`**:
+- **Problem**: Whitelist filters typically check for file extensions like `.jpg`, `.php`, `.png`, etc. However, they might not account for spaces in the filename.
+- **Bypass**: If the filter doesn’t properly handle encoded spaces (`%20`), an attacker could upload files like `shell%20.php.jpg` instead of `shell.php`, which would bypass the check for `.php` files because the space is URL-encoded.
+  
+**Example**:  
+- Filename: `shell%20.php.jpg`
+- **Effect**: The filter may only check extensions (e.g., `.jpg`), missing the actual PHP extension because the space is encoded.
+
+---
+
+#### 2. **`%0a (newline, LF)`**:
+- **Problem**: Newline characters may be overlooked by some filters, or filters might not properly validate the file name when it contains a newline character.
+- **Bypass**: The `%0a` (newline) character can split the file name, potentially confusing the filter and allowing it to bypass the extension check.
+  
+**Example**:  
+- Filename: `shell%0a.php.jpg`
+- **Effect**: The filter might read `shell` as the filename and `.jpg` as the extension, incorrectly allowing it through the whitelist.
+
+---
+
+#### 3. **`%00 (null byte)`**:
+- **Problem**: A null byte (`%00`) is a special character that terminates strings in many programming languages (e.g., C, PHP).
+- **Bypass**: If the filter is implemented poorly and stops processing the file name when it encounters the null byte, it may incorrectly stop checking for the `.php` extension. This effectively bypasses file extension validation.
+  
+**Example**:  
+- Filename: `shell%00.php.jpg`
+- **Effect**: The filter might stop reading after the `%00` and mistakenly treat `shell` as the file name, allowing a PHP file to be uploaded.
+
+---
+
+#### 4. **`%0d0a (CRLF)`**:
+- **Problem**: CRLF (`%0d0a`) characters are used in HTTP headers to separate lines. Some filters may improperly handle CRLFs in the filename or URL.
+- **Bypass**: The CRLF injection could cause the filter to treat the file name as malformed or split the file name and extension across the CRLF, bypassing the extension check.
+  
+**Example**:  
+- Filename: `shell%0d0a.php.jpg`
+- **Effect**: The filter could misinterpret `shell%0d0a.php` as a valid file and ignore `.jpg` or vice versa.
+
+---
+
+#### 5. **`/ (slash)`**:
+- **Problem**: Some filters might only check for the file extension and not consider path manipulation.
+- **Bypass**: The slash (`/`) can be used for **path traversal**. By including it, attackers can trick the filter into allowing files with unexpected paths or extensions.
+  
+**Example**:  
+- Filename: `shell/.php.jpg`
+- **Effect**: The filter might ignore the `/` and treat `.php` as the extension, allowing a PHP file to be uploaded as a `.jpg` file.
+
+---
+
+#### 6. **`.\\ (relative path on Windows)`**:
+- **Problem**: Some filters might not handle relative path notation properly on Windows.
+- **Bypass**: The `.\\` sequence refers to the current directory in Windows file systems, allowing attackers to upload files outside the intended directory. If the filter doesn’t sanitize input correctly, it might allow these relative paths.
+  
+**Example**:  
+- Filename: `shell.\php.jpg`
+- **Effect**: The filter might misinterpret the path and allow the PHP file to be uploaded, bypassing the `.php` check.
+
+---
+
+#### 7. **`. (dot - current directory)`**:
+- **Problem**: The dot (`.`) represents the current directory. Filters that only check extensions might miss this manipulation.
+- **Bypass**: If an attacker includes `.` in the file name, it could potentially trick the filter into thinking the file is safe, despite having a malicious extension like `.php`.
+  
+**Example**:  
+- Filename: `shell./php.jpg`
+- **Effect**: The filter might incorrectly allow the file as a `.jpg` file, but it could actually be a `.php` file, leading to an upload bypass.
+
+---
+
+#### 8. **`… (ellipsis)`**:
+- **Problem**: The ellipsis (`…`) is not always recognized as a special character in filename validation.
+- **Bypass**: Filters that don’t properly account for the ellipsis may mistakenly treat it as a regular character, allowing it to bypass validation checks based on the file extension.
+  
+**Example**:  
+- Filename: `shell…php.jpg`
+- **Effect**: The filter might ignore or misinterpret the ellipsis and allow the file to bypass the `.php` extension check, treating it as `.jpg`.
+
+---
+
+#### 9. **`: (colon)`**:
+- **Problem**: The colon (`:`) is a special character in Windows paths. Some filters may not correctly process file names with colons.
+- **Bypass**: If the filter fails to handle the colon properly, it could allow files with colons to be uploaded, potentially bypassing checks for dangerous file types.
+  
+**Example**:  
+- Filename: `shell:php.jpg`
+- **Effect**: The filter might treat the file name as valid despite the colon, allowing it to pass as a `.jpg` file when it could be a `.php` file.
+
+---
+
+
