@@ -224,10 +224,44 @@ Once the web shell is uploaded, inspect the profile image URL to locate the file
    - **Effect**: Tricking server to misinterpret the filename, allowing PHP code execution.
    - Example: `shell.php%00.jpg` works on older PHP versions.
    - **Fuzzing tool**: Generate permutations of filenames with injected characters to find valid uploads.
-
 **Custom Wordlist Generation for Fuzzing:**
    - Use a bash script to create filename permutations with injected characters to test against upload forms.
-   - **Goal**: Identify filenames that bypass whitelisting and execute PHP code after upload.
+```bash
+for char in '%20' '%0a' '%00' '%0d0a' '/' '.\\' '.' '…' ':'; do
+    for ext in '.php' '.phps'; do
+        echo "shell$char$ext.jpg" >> wordlist.txt
+        echo "shell$ext$char.jpg" >> wordlist.txt
+        echo "shell.jpg$char$ext" >> wordlist.txt
+        echo "shell.jpg$ext$char" >> wordlist.txt
+    done
+done
+```
 
+Here is the revised list, including examples of how each character injection can be used to bypass file upload whitelist validation:
 
+### Character Injection List for File Upload Bypass:
 
+| Character Injection | Description                                       | Example File Name | Use Case |
+|---------------------|---------------------------------------------------|--------------------|----------|
+| **%20 (space)**     | URL encoding for a space character                | `shell%20name.php` | Bypasses filters that don't account for spaces, allowing PHP files to pass as valid. |
+| **%0a (newline, LF)**| URL encoding for a newline character (Line Feed)  | `shell%0aname.php` | Injects a newline into the file name, which may bypass filters or cause unintended parsing behavior. |
+| **%00 (null byte)** | URL encoding for a null byte (end of string)      | `shell%00name.php` | Terminates the string early, causing filters to incorrectly stop checking after the null byte, potentially bypassing file type checks. |
+| **%0d0a (CRLF)**    | URL encoding for carriage return + newline (CRLF)| `shell%0d0aname.php` | CRLF can be used for header injection or bypassing filters that only check the file extension, potentially leading to security vulnerabilities. |
+| **/ (slash)**       | Directory separator (path traversal)              | `shell/..%5c%5c/etc/passwd` | Exploits path traversal vulnerabilities, allowing files to be uploaded to unintended locations, such as system files. |
+| **.\\ (relative path on Windows)**| Windows-specific relative path                | `shell.\uploads\file.php` | Windows uses `.\\` to reference directories, which could bypass directory restrictions by allowing files to be uploaded outside the allowed folder. |
+| **. (dot - current directory)**| Refers to the current directory                | `shell./uploads/file.php` | Uses `.` to reference the current directory, potentially bypassing checks that only allow uploads within a certain folder. |
+| **… (ellipsis)**    | Used as an ellipsis character, often overlooked by filters | `file…name.php`    | Bypasses filters that don't account for the ellipsis character, allowing files with unusual names to bypass validation. |
+| **: (colon)**       | Special character used in Windows paths           | `C:\uploads\file.php` | In Windows, `:` is part of file paths (e.g., `C:\`). Some filters may not properly handle this character, allowing bypasses. |
+
+### Explanation:
+- **%20**: A space encoded as `%20` can bypass file extension filters that don't handle URL encoding or spaces in file names.
+- **%0a**: A newline encoded as `%0a` could cause misinterpretation of the file name and allow it to pass through a filter that only checks for certain extensions.
+- **%00**: The null byte (`%00`) is a classic method to terminate strings early, effectively bypassing file extension checks or even path restrictions.
+- **%0d0a**: CRLF injection is used in file upload attacks to insert control characters into the file name, potentially exploiting header injection or bypassing extension checks.
+- **/**: The directory separator can be used for path traversal, making it possible to upload files to sensitive locations outside the designated upload directory.
+- **.\\**: Windows-style relative paths can be used to bypass directory restrictions by referring to locations outside the intended upload folder.
+- **.**: Using the current directory (.) can trick filters into allowing uploads to unintended locations.
+- **…**: The ellipsis character can be used to bypass filters that are not designed to handle this character, helping an attacker obfuscate the file name.
+- **:**: In Windows paths, the colon is used in drive names (e.g., `C:`). If the filter doesn’t handle it properly, it may allow an attacker to upload files to other locations.
+
+This list includes specific examples showing how each character can be used in file upload bypass attacks, helping to explain how these characters circumvent whitelist validation.
