@@ -2,19 +2,20 @@
 
 ## Methology
 
-1. Check for web server's language
+1. Check for `web server's language`
    - Can use `wappalyzer` browser extension
    - Fuzz index`.ext`
-2. Check and bypass client-side validation
+2. Check and bypass `client-side validation`
    - Inspect `web page`
    - Intercept requests with `burp suite` and change `filename` and `file data`
-3. Check and bypass blacklists
+3. Check and bypass `blacklists`
    - Fuzz working web server's language extensions
      - Utilize working web server's language extensions. Some indications can be a different error message that gets outputted from the error messages from the extensions you know for sure are blacklisted.
-4. Check and bypass whitelists (and blacklists if applicable)
+4. Check and bypass `whitelists` (and blacklists if applicable)
    - `double extension` like test.jpg.php
    - ` reverse double extension` like test.php.jpg (`relies on server misconfiguration`)
    - character injection (`i.e. null byte`)
+5. Check and bypass `content checks`
    
 ## Key Concepts on File Upload Vulnerabilities
 
@@ -360,5 +361,14 @@ Here's a breakdown of how each character injection can bypass a **whitelist filt
 - **Effect**: The filter might treat the file name as valid despite the colon, allowing it to pass as a `.jpg` file when it could be a `.php` file.
 
 ---
+
+## Validating File Content
+In the previous sections, we were dealing with web applications that only validate for the `file extension` in the file name. However, this is not very secure. Many modern web applications are now incorporating `file content validation` to ensure the content of the loaded file matches with the specific type. There are two common methods for validating file content:  
+1. `Content-Type Header`
+2. `File Content`
+
+---
+
+### Content Type
 
 
