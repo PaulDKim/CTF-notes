@@ -393,6 +393,23 @@ wget https://raw.githubusercontent.com/danielmiessler/SecLists/refs/heads/master
 cat web-all-content-types.txt | grep 'image/' > image-content-types.txt
 ```
 
+> The `wget` command in Bash is a non-interactive network downloader used to fetch files from the web using HTTP, HTTPS, or FTP protocols.
+
+1. **Download a file**:  
+   `wget http://example.com/file.txt`
+
+2. **Download multiple files**:  
+   `wget -i urls.txt` (where `urls.txt` contains a list of URLs)
+
+3. **Resume a partially downloaded file**:  
+   `wget -c http://example.com/largefile.zip`
+
+4. **Download an entire website**:  
+   `wget --mirror -p --convert-links -P ./localdir http://example.com`
+
+5. **Limit download speed**:  
+   `wget --limit-rate=200k http://example.com/file.zip`
+   
 ---
 
 ### MIME-Type
