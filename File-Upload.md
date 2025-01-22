@@ -1,5 +1,21 @@
 # File Upload Vulnerability Notes
 
+## Methology
+
+1. Check for web server's language
+   - Can use `wappalyzer` browser extension
+   - Fuzz index`.ext`
+2. Check and bypass client-side validation
+   - Inspect `web page`
+   - Intercept requests with `burp suite` and change `filename` and `file data`
+3. Check and bypass blacklists
+   - Fuzz working web server's language extensions
+     - Utilize working web server's language extensions. Some indications can be a different error message that gets outputted from the error messages from the extensions you know for sure are blacklisted.
+4. Check and bypass whitelists (and blacklists if applicable)
+   - `double extension` like test.jpg.php
+   - ` reverse double extension` like test.php.jpg (`relies on server misconfiguration`)
+   - character injection (`i.e. null byte`)
+   
 ## Key Concepts on File Upload Vulnerabilities
 
 ### 1. **Absent Validation**
