@@ -386,7 +386,12 @@ if (!in_array($type, array('image/jpg', 'image/jpeg', 'image/png', 'image/gif'))
 ```
 Browsers automatically set the content-type header when selecting a file through the file selector dialog, usually derived from the file extension. However, since our browser sets this, this operation is a `client-side operation`, and we can manipulate this to change the perceived file type and potentially bypass the `type filter`
 > Now that you know this, you can fuzz the Content-Type header using a Content-Type wordlist (like from Seclists) through Burp Intruder to see which types are allowed. 
-> Because the error message tells you that only images are allowed, you can limit the scan to image types, so you do not have run a long intruder attack. 
+> Because the error message tells you that only images are allowed, you can limit the scan to image types, so you do not have run a long intruder attack.
+
+```bash
+wget https://raw.githubusercontent.com/danielmiessler/SecLists/refs/heads/master/Discovery/Web-Content/web-all-content-types.txt
+cat web-all-content-types.txt | grep 'image/' > image-content-types.txt
+```
 
 ---
 
