@@ -11,11 +11,15 @@
 3. Check and bypass `blacklists`
    - Fuzz working web server's language extensions
      - Utilize working web server's language extensions. Some indications can be a different error message that gets outputted from the error messages from the extensions you know for sure are blacklisted.
+> TIP: before starting to fuzz with burp intruder, make sure to uncheck url encoding
+
 4. Check and bypass `whitelists` (and blacklists if applicable)
    - `double extension` like test.jpg.php
    - ` reverse double extension` like test.php.jpg (`relies on server misconfiguration`)
    - character injection (`i.e. null byte`)
 5. Check and bypass `content checks`
+   - `Content-type` fuzzing for accepted content type values
+   - Manipulating file MIME values by adding mnemonic values as plain text to the start of the data body or file
    
 ## Key Concepts on File Upload Vulnerabilities
 
@@ -362,7 +366,7 @@ Here's a breakdown of how each character injection can bypass a **whitelist filt
 
 ---
 
-## Validating File Content
+## Type Filters
 In the previous sections, we were dealing with web applications that only validate for the `file extension` in the file name. However, this is not very secure. Many modern web applications are now incorporating `file content validation` to ensure the content of the loaded file matches with the specific type. There are two common methods for validating file content:  
 1. `Content-Type Header`
 2. `File Content`
@@ -370,5 +374,40 @@ In the previous sections, we were dealing with web applications that only valida
 ---
 
 ### Content Type
+**Scenario:** You try to upload a `.php` file and get an `Only images are allowed` error message. The error message persists, and our file fails to upload even if you utilize some of the tricks like `double extensions`. But the error message also persists when you use `test.jpg` with a `web shell content`. Because the file extension does not affect the error message, the web application must be testing the file content for `type validation`. Web application can test the `content-type` http header like: 
 
+```php
+$type = $_FILES['uploadFile']['type'];
 
+if (!in_array($type, array('image/jpg', 'image/jpeg', 'image/png', 'image/gif'))) {
+    echo "Only images are allowed";
+    die();
+}
+```
+Browsers automatically set the content-type header when selecting a file through the file selector dialog, usually derived from the file extension. However, since our browser sets this, this operation is a `client-side operation`, and we can manipulate this to change the perceived file type and potentially bypass the `type filter`
+> Now that you know this, you can fuzz the Content-Type header using a Content-Type wordlist (like from Seclists) through Burp Intruder to see which types are allowed. 
+> Because the error message tells you that only images are allowed, you can limit the scan to image types, so you do not have run a long intruder attack. 
+
+---
+
+### MIME-Type
+`MIME-Type` = `Multipurpose Internet Mail Extensions` is an internet standard that determines the type of a file through its `general format` and `bytes structure`. This is usally done by inspecting the `first few bytes` of a file's content, which contain the `File Signature` or `Magic Bytes`. For example, if a file starts with (GIF87a or GIF89a), this indicates that it is a `GIF` file, while a file starting with plaintext is considered a `Text` file. If we change the first bytes of any file to the GIF magic bytes, its MIME type would be changed to a GIF image, regardless of its remaining content or extension.  
+
+#### Basic Example
+The `file` command on `Unix` systems finds the file type through the `MIME` type. If we create a basic file with text in it, it would be considered a text file. 
+
+```bash
+echo "this is a text file" > text.jpg
+file text.jpg
+
+OUTPUT: text.jpg: ASCII text
+```
+The file's MIME type is `ASCII text,` even though its extension is `.jpg`. However, if we write GIF8 to the beginning of the file, it will be considered as a `GIF` image instead, even though the extension is still .jpg: 
+
+```bash
+echo "GIF8" > text.jpg
+file text.jpg
+
+OUTPUT: text.jpg: GIF image data
+```
+> TIP: the GIF8 is plaintext that can be placed at the beginning of the file data. You can also manipulate it through changing the actual bytes to the signature version of mnemonic. You can do this within Burp. 
