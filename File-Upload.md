@@ -433,3 +433,49 @@ file text.jpg
 OUTPUT: text.jpg: GIF image data
 ```
 > TIP: the GIF8 is plaintext that can be placed at the beginning of the file data. You can also manipulate it through changing the actual bytes to the signature version of mnemonic. You can do this within Burp. 
+
+## Limited File Uploads (Non-arbitrary)
+
+We may come across web applications that have `limited` (i.e., `non-arbitrary`) file upload forms, which only allows us to upload specific file types. Certain file types like `SVG, HTML, XML` and even some `image and document files` may allow us to introduce new vulnerabilities to the web application by uploading `malicious versions` of these files. This is precisely why fuzzing for `allowed file extensions` is an important part of the overall methology for `file upload vulnerability attacks.`
+
+### XSS 
+Many file types may allow us to introduce a `stored XSS` vulnerability to the web application by uploading maliciously crafted versions of the files. For instance, when a web application allows us to upload `HTML` files, although HTML files won't allow us to execute code (PHP), it would still be possible to implement `malicious javascript` code within them to carry an `XSS` or `CSRF` attack on whoever visits the uploaded HTML page.  
+
+---
+
+Another example of XSS attacks is web applications that display an `image's metadata` after its upload. This can be seen in web applications like `Flickr` or `Instagram` because these web applications may show details about the uploaded photo, such as the camera model or location. For such web applications, we can include an XSS payload in one of the Metadata's parameters that accepts raw text, like the `comment` or `artist` parameter: 
+
+```bash
+exiftool -Comment=' "><img src=1 onerror=alert(window.origin)>' example.jpg
+exiftool example.jpg
+
+OUTPUTS: "><img src=1 onerror=alert(window.origin)>
+```
+
+> exiftool is a command-line utility for reading and modifying metadata in files, especially images. It supports many formats such as JPEG, PNG, and TIFF
+
+Furthermore, if we change the image's MIME-Type to `text/html`, some web applications may show it as an HTML document instead of an image, in which case the XSS payload would be triggered even if the metadata wasn't directly displayed. 
+
+---
+
+XSS attacks can also be carried with `SVG` images, along with other attacks. `SVG` images are `XML-based`, and they describe 2D vector graphics, which the browser renders into an image. For this reason, we can `modify` their `XML data` to include an `XSS payload`. For example, we can write the following to `example.jpg`: 
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="1" height="1">
+    <rect x="1" y="1" width="1" height="1" fill="green" stroke="black" />
+    <script type="text/javascript">alert(window.origin);</script>
+</svg>
+```
+> TIP: Unlike typical image formats like JPEG or PNG, an SVG is text-based, meaning it contains code that tells the browser how to render the image.
+
+An example of an SVG file: 
+
+```xml
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+    <circle cx="50" cy="50" r="40" fill="red" />
+</svg>
+
+```
+
