@@ -526,7 +526,17 @@ Let's break this down part by part:
    - `ENTITY xxe`: Declares a new XML entity named xxe. Entities in XML can be used to include data in the document by referencing them, much like how variables work in programming languages
    - `SYSTEM`: This tells the XML parser that the entity will reference an `external resrouce` as opposed to an internal value
    - `"php://filter/convert.base64-encode/resource=index.php"`
-     * this is a `special PHP stream wrapper
+     * `php://`: a special`PHP stream wrapper`. It tells PHP to treat the following part as a "stream" (a way to access data, like a file or resource). Just a way to incorporate PHP functionality into your code. 
+     * `filter/`: Tells php that you want to `apply a filter` to the stream (modify or process the data in some way
+     * `convert.base64-encode`: The actual filter
+     * `resource=index.php`: Specifies the **file/resource** you want to apply the filters to.
+     
+> TIP 1: Why encode it base64? it makes it easy to send binary data (like the contents of a php file) through text based systems like XML without causing issues (since XML only likes plain-text)
 
-> TIP: The attack should work the same way whether the DOCTYPE is svg or note etc., as the core issue is how the XML parser handles external entities. The only difference is the context or intended structure of the XML document (i.e., an SVG graphic versus a "note" document
+> TIP 2: The attack should work the same way whether the DOCTYPE is svg or note etc., as the core issue is how the XML parser handles external entities. The only difference is the context or intended structure of the XML document (i.e., an SVG graphic versus a "note" document
 
+It's important to note that using `XML data` is not unique to SVG images, as it is also utilized by many types of documents, like `PDF`, `Word Documents`, `Powerpoint Documents`, among many others. All of these documents include XML data within them to specify their format and structure. Suppose a web app has a document viewer that is vulnerable to XXE and allowed uploading any of these documents. In that case, we can modify their XML data to include malicious XXE elements, and we would be able to carry out a blind XXE attack on the backend server. 
+
+### DoS (Denial of Service 
+
+Many file upload vulnerabilities may lead to Denial of Service (DOS) attack on the web server. 
