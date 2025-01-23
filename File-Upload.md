@@ -1,5 +1,8 @@
 # File Upload Vulnerability Notes
 
+## External Links That Are Helpful
+https://www.php.net/manual/en/wrappers.php
+
 ## Arbitrary File Upload Methology
 
 1. Check for `web server's language`
