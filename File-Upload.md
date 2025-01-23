@@ -539,4 +539,45 @@ It's important to note that using `XML data` is not unique to SVG images, as it 
 
 ### DoS (Denial of Service 
 
-Many file upload vulnerabilities may lead to Denial of Service (DOS) attack on the web server. 
+Many file upload vulnerabilities may lead to Denial of Service (DOS) attack on the web server. A `DoS` attack occurs when an attacker overwhelms or crashes a web server, making it unavailable to legitimate users. In the context of file upload vulnerabilities, attackers exploit weaknesses in the server's handling of uploaded files to cause `resource exhaustion` or `crashes`. 
+
+
+### **Types of DoS Attacks via File Uploads**
+
+##### **Using XXE Payloads for DoS**
+- **How it works:** Exploiting XML External Entity (XXE) vulnerabilities can lead to DoS attacks. For example, an attacker might repeatedly reference external files or entities in XML data, causing the server to overload or crash.
+- **Example:** Using an XML document with numerous nested external entities to consume server resources.
+
+
+##### **Decompression Bomb (ZIP Bomb)**
+- **What is it?** A malicious compressed file designed to expand into an enormous amount of data when decompressed.
+- **Attack Method:**
+  - Create a ZIP file containing **nested compressed files**. Each nested archive, when extracted, contains further compressed files.
+  - For instance, a single ZIP file could decompress to **petabytes (PB)** of data, overwhelming server storage or memory.
+- **Key Vulnerability:** If the web app **automatically unzips files** upon upload, this can crash the server.
+
+
+##### **Pixel Flood Attack (Image DoS)**
+- **What is it?** A maliciously crafted image file with manipulated compression data.
+- **Attack Method:**
+  - Start with a valid image (e.g., JPG, PNG) of a small size (e.g., 500x500 pixels).
+  - Modify the **metadata** to claim an enormous image size (e.g., `0xffff x 0xffff` pixels = 4 gigapixels).
+  - When the server tries to display or process the image, it **allocates excessive memory** based on the fake metadata, leading to a crash.
+- **Key Vulnerability:** Applications that handle image compression without validating metadata.
+
+
+##### **Uploading Overly Large Files**
+- **How it works:**
+  - Exploit upload forms that **do not limit file size**.
+  - Upload excessively large files to fill up the server’s **hard drive** or **memory**, causing the server to slow down or crash.
+- **Impact:** Resource exhaustion leads to server unavailability.
+
+
+##### **Directory Traversal**
+- **What is it?**
+  - Using file paths like `../../../etc/passwd` to upload files to unintended directories on the server.
+- **Attack Method:**
+  - If the server does not properly validate file paths, the attacker might overwrite critical files or write files in unauthorized directories.
+  - This can cause system instability or crashes.
+
+
