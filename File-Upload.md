@@ -564,6 +564,9 @@ My previous example:
 
 ---
 
+- `<!DOCTYPE>` specifies the type of the document (e.g., `svg`, `note`), telling the XML parser what kind of structure to expect.
+- Inside the `<!DOCTYPE>`, you can define rules, entities, or references (like variables or external files) that the document follows.
+
 ### DoS (Denial of Service 
 
 Many file upload vulnerabilities may lead to Denial of Service (DOS) attack on the web server. A `DoS` attack occurs when an attacker overwhelms or crashes a web server, making it unavailable to legitimate users. In the context of file upload vulnerabilities, attackers exploit weaknesses in the server's handling of uploaded files to cause `resource exhaustion` or `crashes`. 
