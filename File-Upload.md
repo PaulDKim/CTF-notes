@@ -479,3 +479,54 @@ An example of an SVG file:
 
 ```
 
+### XXE 
+
+#### What are XXE Attacks? 
+An `XXE (XML External Entity` attack exploits vulnerabilities in applications that parse XML input. It takes advantage of the ability of XML parsers to process `external entities`, which can allow attackers to access `sensitive files`, perform `denial of service (DoS)`, or even `remote code execution`. 
+#### How does XXE Work? 
+1. **What are External Entities**
+   - XML allows defining `custom` entities to include external resources like files or URLs.
+   - Example:
+     ```xml
+     <!DOCTYPE note [
+        <!ENTITY example SYSTEM "file:///etc/passwd">
+      ]>
+      <note>
+        <to>&example;</to>
+      </note>
+     ```
+   - `&example;` is replaced with the contents of the file `etc/passwd`
+
+---
+
+Because `SVG` images are `XML-based`, we can also include malicious XML data/code to leak the source code of the web application, and other internal documents within the server. The following example can be used for an SVG image that leaks the content of `/etc/passwd`: 
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg [ <!ENTITY xxe SYSTEM "file:///etc/passwd"> ]>
+<svg>&xxe;</svg>
+```
+
+Furthermore, you can even read source code using the following payload in our SVG image: 
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg [ <!ENTITY xxe SYSTEM "php://filter/convert.base64-encode/resource=index.php"> ]>
+<svg>&xxe;</svg>
+```
+
+Let's break this down part by part: 
+1. **Line 1**: `<?xml version="1.0" encoding="UTF-8"?>`
+   - This is an `xml declaration`
+   - It defines the version of XML being used and the character encoding for the file
+2. **Line 2**: `<!DOCTYPE svg [ ... ]>`
+   - This line defines the `Document Type Definition` (DTD) and declares an `entity`
+   - DTDs are used to define the structure and allowed elements for an XML document. In this case, it's defining custom rules for the `svg` file.
+3. **Line 2 Part 2**: `<!ENTITY xxe SYSTEM "php://filter/convert.base64-encode/resource=index.php">`
+   - `ENTITY xxe`: Declares a new XML entity named xxe. Entities in XML can be used to include data in the document by referencing them, much like how variables work in programming languages
+   - `SYSTEM`: This tells the XML parser that the entity will reference an `external resrouce` as opposed to an internal value
+   - `"php://filter/convert.base64-encode/resource=index.php"`
+     * this is a `special PHP stream wrapper
+
+> TIP: The attack should work the same way whether the DOCTYPE is svg or note etc., as the core issue is how the XML parser handles external entities. The only difference is the context or intended structure of the XML document (i.e., an SVG graphic versus a "note" document
+
