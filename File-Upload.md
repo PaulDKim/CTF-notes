@@ -1,6 +1,6 @@
 # File Upload Vulnerability Notes
 
-## Methology
+## Arbitrary File Upload Methology
 
 1. Check for `web server's language`
    - Can use `wappalyzer` browser extension
