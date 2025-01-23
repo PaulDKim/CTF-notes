@@ -537,6 +537,33 @@ Let's break this down part by part:
 
 It's important to note that using `XML data` is not unique to SVG images, as it is also utilized by many types of documents, like `PDF`, `Word Documents`, `Powerpoint Documents`, among many others. All of these documents include XML data within them to specify their format and structure. Suppose a web app has a document viewer that is vulnerable to XXE and allowed uploading any of these documents. In that case, we can modify their XML data to include malicious XXE elements, and we would be able to carry out a blind XXE attack on the backend server. 
 
+---
+
+#### Extra Notes
+
+1. **Internal**: Rules or entities are **inside the XML file** itself (in `<!DOCTYPE>` with `[...]`).  
+   Example:  
+   ```xml
+   <!DOCTYPE note [ <!ENTITY myNote "Hello!"> ]>
+   <note>&myNote;</note>
+   ```
+
+2. **External**: Rules or entities are in a **separate file**, and the XML file refers to it using `SYSTEM` or `PUBLIC`.  
+   Example:  
+   ```xml
+   <!DOCTYPE note SYSTEM "Note.dtd">
+   <note>...</note>
+   ```
+   The XML file looks in `Note.dtd` for the rules.
+
+My previous example:
+```xml
+<!DOCTYPE svg [ <!ENTITY xxe SYSTEM "file:///etc/passwd"> ]>
+```
+- Uses **internal rules** (`[...]`) but points to an **external file** (`file:///etc/passwd`). It’s a mix!
+
+---
+
 ### DoS (Denial of Service 
 
 Many file upload vulnerabilities may lead to Denial of Service (DOS) attack on the web server. A `DoS` attack occurs when an attacker overwhelms or crashes a web server, making it unavailable to legitimate users. In the context of file upload vulnerabilities, attackers exploit weaknesses in the server's handling of uploaded files to cause `resource exhaustion` or `crashes`. 
