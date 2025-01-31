@@ -89,13 +89,56 @@ PHP provides different built-in wrappers that work like **fake file paths**:
 
 ---
 
-#### **Example: Using `php://memory` Instead of a File**
+### `convert.base64-encode` 
+**PHP stream filter** that encodes data in **Base64** format when reading a file.  
+
+#### **What is a Stream Filter?**  
+A **stream filter** in PHP modifies data **as it is being read or written**. The `convert.base64-encode` filter **encodes file contents** into Base64 on the fly.
+
+---
+
+#### **How `convert.base64-encode` Works**
+When used with `php://filter`, it tells PHP to **encode the file content** before returning it.
+
+##### **Example: Base64 Encoding a File**
 ```php
-$fp = fopen("php://memory", "w+"); // Opens a temporary memory stream
-fwrite($fp, "Hello, World!");      // Writes data to it
-rewind($fp);                       // Resets pointer to start
-echo fread($fp, 1024);              // Reads data (outputs: Hello, World!)
-fclose($fp);                        // Closes the stream
+echo file_get_contents("php://filter/convert.base64-encode/resource=file.txt");
 ```
-- There’s **no actual file on disk**—data is stored in RAM!  
-- But **PHP treats it like a file**, so you can use `fopen()`, `fwrite()`, etc.  
+If `file.txt` contains:  
+```
+Hello, World!
+```
+The output will be:  
+```
+SGVsbG8sIFdvcmxkIQ==
+```
+(This is the Base64-encoded version of `"Hello, World!"`.)
+
+---
+
+#### **How It’s Used in XML External Entity (XXE) Attacks**
+An attacker could inject this XML:  
+```xml
+<!DOCTYPE foo [
+  <!ENTITY ext SYSTEM "php://filter/convert.base64-encode/resource=/etc/passwd">
+]>
+<foo>&ext;</foo>
+```
+If external entity loading is enabled, the XML parser in PHP will:  
+1. Read `/etc/passwd`.  
+2. Encode it in Base64.  
+3. Return the encoded data to the attacker.  
+
+The attacker can then **decode it** to see the file contents.
+
+---
+
+#### **Other Useful `convert.*` Filters**
+| Filter | Description |
+|--------|------------|
+| `convert.base64-encode` | Encodes data in Base64. |
+| `convert.base64-decode` | Decodes Base64 back to plain text. |
+| `convert.quoted-printable-encode` | Encodes in quoted-printable format. |
+| `convert.quoted-printable-decode` | Decodes quoted-printable format. |
+
+
