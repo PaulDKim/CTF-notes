@@ -2,4 +2,27 @@
 Server-Side Request Forgery (SSRF) is a vulnerability where an attacker can manipulate a web application into 
 sending unauthorized requests from the server. This vulnerability often occurs when an application makes HTTP 
 requests to other servers based on user input. Successful exploitation of SSRF can enable an attacker to access 
-internal systems, bypass firewalls, and retrieve sensitive information.
+internal systems, bypass firewalls, and retrieve sensitive information. Below is an example of a website being 
+vulnerable to `SSRF`: 
+
+## **1. Understanding the Vulnerability**
+- The web application has a feature to check appointment availability.
+- It sends a request to an external URL via the `dateserver` parameter.
+- This means the web server fetches data from a user-specified URL.
+
+## **2. Confirming SSRF**
+- Instead of a real dateserver URL, you enter your own system’s URL (e.g., `http://your-ip/ssrf`).
+- Using **netcat (`nc -lnvp 8000`)**, you see that the server connects to your system.
+- This confirms that the server is making requests to external URLs specified by users.
+
+## **3. Checking If SSRF is Blind**
+- You tell the application to request its own local address (`http://127.0.0.1/index.php`).
+- If the response includes the HTML of the web application, the SSRF is **not blind** (meaning you can see the response).
+
+## **4. Exploiting SSRF for Internal Enumeration**
+- Since the server makes requests internally, you can check for open ports.
+- Testing a closed port (like `81`) returns an error.
+- Using **ffuf**, you scan for open ports by sending requests with different port numbers and filtering out error responses.
+- Example results show:
+  - Port **3306** (MySQL database) is open.
+  - Port **80** (HTTP web server) is open.
