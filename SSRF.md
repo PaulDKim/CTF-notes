@@ -15,6 +15,10 @@ vulnerable to `SSRF`:
 - Using **netcat (`nc -lnvp 8000`)**, you see that the server connects to your system.
 - This confirms that the server is making requests to external URLs specified by users.
 
+> The -l tag is a `listen` tag. It tells Netcat to act as a server and listen for incoming connections.
+> The -v tag is a `verbose` tag. This makes Netcat more verbose, providing more output about what it's doing
+> The -p tag is a `port` tag. It tells the Netcat server which port to listen on
+
 ## **3. Checking If SSRF is Blind**
 - You tell the application to request its own local address (`http://127.0.0.1/index.php`).
 - If the response includes the HTML of the web application, the SSRF is **not blind** (meaning you can see the response).
@@ -23,6 +27,12 @@ vulnerable to `SSRF`:
 - Since the server makes requests internally, you can check for open ports.
 - Testing a closed port (like `81`) returns an error.
 - Using **ffuf**, you scan for open ports by sending requests with different port numbers and filtering out error responses.
+- You can create a simple bash script to create a number list of the ports you want to scan for such as:
+  ```bash
+    seq 1 1000 > ports.txt
+  ```
 - Example results show:
   - Port **3306** (MySQL database) is open.
   - Port **80** (HTTP web server) is open.
+ 
+
